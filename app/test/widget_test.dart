@@ -6,6 +6,74 @@ import 'package:robot_controller/protocol.dart';
 import 'controller_test.dart' show FakeRadio;
 
 void main() {
+  testWidgets('demo controls, STOP, cancel and exit work without Bluetooth', (
+    tester,
+  ) async {
+    final radio = FakeRadio();
+    final c = RobotController(radio);
+    await tester.pumpWidget(RobotApp(controller: c));
+    await tester.tap(find.text('Start demo'));
+    await tester.pumpAndSettle();
+    expect(find.text('DEMO • No Bluetooth connection'), findsOneWidget);
+    expect(find.text('Pair in Android settings'), findsNothing);
+    expect(c.isDemo, isTrue);
+    expect(c.canMove, isTrue);
+    final controls = {
+      'Forward': Movement.forward,
+      'Left': Movement.left,
+      'Right': Movement.right,
+      'Backward': Movement.backward,
+    };
+    for (final entry in controls.entries) {
+      await tester.ensureVisible(find.text(entry.key));
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text(entry.key)),
+      );
+      await tester.pump();
+      expect(c.desired, entry.value);
+      expect(c.reported, 'OK ${entry.value.code}');
+      await gesture.up();
+      await tester.pump();
+      expect(c.desired, Movement.stop);
+      expect(c.reported, 'OK S');
+    }
+    await tester.ensureVisible(find.text('Forward'));
+    final held = await tester.startGesture(
+      tester.getCenter(find.text('Forward')),
+      pointer: 7,
+    );
+    await tester.pump();
+    await tester.tap(find.text('STOP'));
+    await tester.pump();
+    expect(c.desired, Movement.stop);
+    expect(c.reported, 'OK S');
+    await held.cancel();
+    await tester.pump();
+    final cancelled = await tester.startGesture(
+      tester.getCenter(find.text('Forward')),
+    );
+    await tester.pump();
+    await cancelled.cancel();
+    await tester.pump();
+    expect(c.desired, Movement.stop);
+    await tester.ensureVisible(find.text('Exit demo'));
+    await tester.tap(find.text('Exit demo'));
+    await tester.pumpAndSettle();
+    expect(c.isDemo, isFalse);
+    expect(c.canMove, isFalse);
+    expect(radio.connectionCalls, 0);
+    await tester.ensureVisible(find.text('Start demo'));
+    await tester.tap(find.text('Start demo'));
+    await tester.pumpAndSettle();
+    expect(c.isDemo, isTrue);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    expect(c.isDemo, isFalse);
+    expect(c.canMove, isFalse);
+    expect(c.desired, Movement.stop);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump();
+  });
   testWidgets('paired selection, handshake, hold/release and background stop', (
     tester,
   ) async {

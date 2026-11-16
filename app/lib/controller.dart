@@ -27,6 +27,7 @@ class RobotController extends ChangeNotifier {
   StreamSubscription<List<int>>? _input;
   Timer? _heartbeat, _feedback;
   bool _ready = false, _disposed = false;
+  bool _demo = false;
   RobotLink? _writingLink;
   int _epoch = 0;
   bool connecting = false;
@@ -34,15 +35,25 @@ class RobotController extends ChangeNotifier {
   String reported = 'No firmware feedback';
   Movement desired = Movement.stop;
   bool get connected => _link != null;
+  bool get isDemo => _demo;
   bool get canMove => connected && _ready;
-  Future<void> connect(String address) async {
+  Future<void> connect(String address) =>
+      _connect(() => radio.connect(address));
+  Future<void> startDemo() => _connect(() async => _DemoLink(), demo: true);
+
+  Future<void> _connect(
+    Future<RobotLink> Function() open, {
+    bool demo = false,
+  }) async {
     if (connected || connecting || _disposed) return;
     final epoch = ++_epoch;
     connecting = true;
-    status = 'Connecting…';
+    _demo = demo;
+    reported = 'No firmware feedback';
+    status = demo ? 'Starting demo…' : 'Connecting…';
     _changed();
     try {
-      final link = await radio.connect(address);
+      final link = await open();
       if (_disposed || epoch != _epoch) {
         await link.close();
         return;
@@ -66,7 +77,9 @@ class RobotController extends ChangeNotifier {
           }
         },
       );
-      status = 'Connected; waiting for firmware';
+      status = demo
+          ? 'Demo starting; waiting for simulated reply'
+          : 'Connected; waiting for firmware';
       _armFeedback();
       _heartbeat = Timer.periodic(const Duration(milliseconds: 100), (_) {
         unawaited(_send());
@@ -103,7 +116,9 @@ class RobotController extends ChangeNotifier {
     if (!Movement.values.any((m) => line == 'OK ${m.code}')) return;
     reported = line;
     if (!_ready && line == 'OK S') _ready = true;
-    status = _ready ? 'Connected' : 'Waiting for stop acknowledgement';
+    status = _ready
+        ? (_demo ? 'Demo connected' : 'Connected')
+        : 'Waiting for stop acknowledgement';
     _armFeedback();
     _changed();
   }
@@ -139,6 +154,8 @@ class RobotController extends ChangeNotifier {
     ++_epoch;
     connecting = false;
     desired = Movement.stop;
+    _demo = false;
+    reported = 'No firmware feedback';
     _ready = false;
     _heartbeat?.cancel();
     _feedback?.cancel();
@@ -176,5 +193,27 @@ class RobotController extends ChangeNotifier {
     _disposed = true;
     unawaited(disconnect());
     super.dispose();
+  }
+}
+
+/// In-memory protocol acknowledgements for UI exploration, not robot physics.
+/// This transport never calls a platform channel or accesses Bluetooth.
+class _DemoLink implements RobotLink {
+  final _input = StreamController<List<int>>();
+  bool _closed = false;
+  @override
+  Stream<List<int>> get bytes => _input.stream;
+  @override
+  Future<void> send(String frame) async {
+    if (_closed) throw StateError('Demo is closed');
+    final valid = Movement.values.any((movement) => movement.frame == frame);
+    _input.add((valid ? 'OK ${frame[0]}\r\n' : 'ERR\r\n').codeUnits);
+  }
+
+  @override
+  Future<void> close() async {
+    if (_closed) return;
+    _closed = true;
+    await _input.close();
   }
 }

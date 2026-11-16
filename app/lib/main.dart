@@ -12,6 +12,7 @@ class RobotApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'Controlled Robot',
+    debugShowCheckedModeBanner: false,
     theme: ThemeData(colorSchemeSeed: Colors.teal),
     home: RobotPage(controller: controller),
   );
@@ -121,15 +122,47 @@ class _RobotPageState extends State<RobotPage> with WidgetsBindingObserver {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text('Android • HC-05 Bluetooth Classic SPP'),
+                  Text(
+                    c.isDemo
+                        ? 'Demonstration • simulated robot'
+                        : 'Android • HC-05 Bluetooth Classic SPP',
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     c.status,
                     key: const Key('status'),
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  Text('Firmware: ${c.reported}'),
+                  Text(
+                    '${c.isDemo ? "Simulated reply" : "Firmware"}: ${c.reported}',
+                  ),
                   Text('Requested: ${c.desired.name} (not measured motion)'),
+                  if (c.isDemo)
+                    Card(
+                      elevation: 0,
+                      color: Theme.of(context).colorScheme.tertiaryContainer,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            const Icon(Icons.smart_toy_outlined, size: 48),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'DEMO • No Bluetooth connection',
+                              textAlign: TextAlign.center,
+                            ),
+                            Text(
+                              'Simulated robot: ${c.desired.name}',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const Text(
+                              'Explore the controls without a robot. No real motor commands are sent.',
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   if (_error != null)
                     Text(
                       _error!,
@@ -138,59 +171,78 @@ class _RobotPageState extends State<RobotPage> with WidgetsBindingObserver {
                       ),
                     ),
                   const SizedBox(height: 12),
-                  OutlinedButton(
-                    onPressed: c.connected || c.connecting ? null : _settings,
-                    child: const Text('Pair in Android settings'),
-                  ),
-                  OutlinedButton(
-                    onPressed: _loading || c.connected || c.connecting
-                        ? null
-                        : _refresh,
-                    child: Text(
-                      _loading ? 'Loading…' : 'Refresh paired devices',
+                  if (!c.isDemo) ...[
+                    FilledButton.tonalIcon(
+                      onPressed: c.connected || c.connecting || _loading
+                          ? null
+                          : () {
+                              setState(() {
+                                _pointer = null;
+                                _error = null;
+                              });
+                              unawaited(c.startDemo());
+                            },
+                      icon: const Icon(Icons.play_circle_outline),
+                      label: const Text('Start demo'),
                     ),
-                  ),
-                  DropdownButton<String>(
-                    isExpanded: true,
-                    value: _selected,
-                    hint: const Text('Select your paired HC-05'),
-                    items: _devices
-                        .map(
-                          (d) => DropdownMenuItem(
-                            value: d.address,
-                            child: Text('${d.name} (${d.address})'),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: c.connected || c.connecting
-                        ? null
-                        : (value) => setState(() => _selected = value),
-                  ),
-                  FilledButton(
-                    onPressed: _selected == null || c.connected || c.connecting
-                        ? null
-                        : () => c.connect(_selected!),
-                    child: const Text('Connect'),
-                  ),
+                    OutlinedButton(
+                      onPressed: c.connected || c.connecting ? null : _settings,
+                      child: const Text('Pair in Android settings'),
+                    ),
+                    OutlinedButton(
+                      onPressed: _loading || c.connected || c.connecting
+                          ? null
+                          : _refresh,
+                      child: Text(
+                        _loading ? 'Loading…' : 'Refresh paired devices',
+                      ),
+                    ),
+                    DropdownButton<String>(
+                      isExpanded: true,
+                      value: _selected,
+                      hint: const Text('Select your paired HC-05'),
+                      items: _devices
+                          .map(
+                            (d) => DropdownMenuItem(
+                              value: d.address,
+                              child: Text('${d.name} (${d.address})'),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: c.connected || c.connecting
+                          ? null
+                          : (value) => setState(() => _selected = value),
+                    ),
+                    FilledButton(
+                      onPressed:
+                          _selected == null || c.connected || c.connecting
+                          ? null
+                          : () => c.connect(_selected!),
+                      child: const Text('Connect'),
+                    ),
+                  ],
                   OutlinedButton(
                     onPressed: c.connected || c.connecting
-                        ? () => c.disconnect()
+                        ? () {
+                            _pointer = null;
+                            unawaited(c.disconnect());
+                          }
                         : null,
-                    child: const Text('Disconnect'),
+                    child: Text(c.isDemo ? 'Exit demo' : 'Disconnect'),
                   ),
                   const Divider(height: 32),
-                  const Text(
-                    'Hold a direction. Release to stop. Start with wheels lifted.',
+                  Text(
+                    c.isDemo
+                        ? 'Hold a direction to simulate movement. Release to stop.'
+                        : 'Hold a direction. Release to stop. Start with wheels lifted.',
                   ),
                   const SizedBox(height: 12),
                   Center(child: _direction('Forward', Movement.forward)),
                   const SizedBox(height: 8),
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 12,
-                    runSpacing: 8,
+                  Row(
                     children: [
-                      _direction('Left', Movement.left),
+                      Expanded(child: _direction('Left', Movement.left)),
+                      const SizedBox(width: 8),
                       FilledButton(
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.red.shade800,
@@ -204,14 +256,17 @@ class _RobotPageState extends State<RobotPage> with WidgetsBindingObserver {
                           child: Center(widthFactor: 1, child: Text('STOP')),
                         ),
                       ),
-                      _direction('Right', Movement.right),
+                      const SizedBox(width: 8),
+                      Expanded(child: _direction('Right', Movement.right)),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Center(child: _direction('Backward', Movement.backward)),
                   const SizedBox(height: 20),
-                  const Text(
-                    'No obstacle detection. Firmware disables motors after 500 ms without a valid command. Backgrounding disconnects. Stop is coast/standby, not an emergency brake.',
+                  Text(
+                    c.isDemo
+                        ? 'Demo shows control feedback only. It does not predict real robot movement. Exit demo to connect to HC-05.'
+                        : 'No obstacle detection. Firmware disables motors after 500 ms without a valid command. Backgrounding disconnects. Stop is coast/standby, not an emergency brake.',
                   ),
                 ],
               ),

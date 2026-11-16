@@ -29,13 +29,17 @@ class FakeLink implements RobotLink {
 class FakeRadio implements RobotRadio {
   Completer<RobotLink>? pending;
   final link = FakeLink();
+  int connectionCalls = 0;
   @override
   Future<List<PairedRobot>> paired() async => [
     const PairedRobot('robot', '00:11:22:33:44:55'),
   ];
   @override
-  Future<RobotLink> connect(String address) async =>
-      pending == null ? link : await pending!.future;
+  Future<RobotLink> connect(String address) async {
+    connectionCalls++;
+    return pending == null ? link : await pending!.future;
+  }
+
   @override
   Future<void> settings() async {}
 }
@@ -124,6 +128,56 @@ void main() {
     radio.link.blocked!.complete();
     c.dispose();
   });
+  test('demo acknowledges every control without accessing Bluetooth', () async {
+    final radio = FakeRadio();
+    final c = RobotController(radio);
+    await c.startDemo();
+    await Future<void>.delayed(Duration.zero);
+    expect(c.isDemo, isTrue);
+    expect(c.canMove, isTrue);
+    expect(c.reported, 'OK S');
+    expect(c.status, contains('Demo'));
+    for (final movement in Movement.values) {
+      c.move(movement);
+      await Future<void>.delayed(Duration.zero);
+      expect(c.desired, movement);
+      expect(c.reported, 'OK ${movement.code}');
+    }
+    await c.connect('real-robot');
+    expect(radio.connectionCalls, 0);
+    c.stop();
+    await Future<void>.delayed(Duration.zero);
+    expect(c.reported, 'OK S');
+    await c.disconnect();
+    expect(c.isDemo, isFalse);
+    expect(c.canMove, isFalse);
+    expect(c.desired, Movement.stop);
+    await c.connect('real-robot');
+    expect(radio.connectionCalls, 1);
+    expect(c.isDemo, isFalse);
+    expect(radio.link.sent, ['S\n']);
+    expect(c.reported, 'No firmware feedback');
+    await c.disconnect();
+    c.dispose();
+  });
+  test(
+    'demo cannot replace a real connection or an in-flight connection',
+    () async {
+      final radio = FakeRadio()..pending = Completer<RobotLink>();
+      final c = RobotController(radio);
+      final pending = c.connect('real-robot');
+      await c.startDemo();
+      expect(c.isDemo, isFalse);
+      radio.pending!.complete(radio.link);
+      await pending;
+      await c.startDemo();
+      expect(c.isDemo, isFalse);
+      expect(radio.connectionCalls, 1);
+      expect(radio.link.closed, isFalse);
+      await c.disconnect();
+      c.dispose();
+    },
+  );
   test('missing feedback disconnects and prevents more movement', () async {
     final radio = FakeRadio();
     final c = RobotController(radio);
