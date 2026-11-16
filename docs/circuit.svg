@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 730" role="img" aria-labelledby="title desc">
+<title id="title">Uno, HC-05 and TB6612FNG logical circuit</title>
+<desc id="desc">Separate USB logic and fused switched motor power; shared ground. Uno TX is divided to 3.3 V. Seven control nets connect the Uno to the driver. A 10 kilohm resistor holds standby low.</desc>
+<rect width="1100" height="730" fill="#fff"/>
+<g font-family="sans-serif" font-size="18" fill="#162b38">
+<text x="35" y="35" font-size="25">Controlled Robot — logical nets (not physical pin positions)</text>
+<g fill="#eaf5f5" stroke="#185968" stroke-width="2"><rect x="40" y="95" width="220" height="490" rx="8"/><rect x="660" y="95" width="380" height="170" rx="8"/><rect x="660" y="330" width="230" height="255" rx="8"/></g>
+<text x="60" y="125" font-size="23">Uno Rev3 (5 V)</text><text x="680" y="125" font-size="23">HC-05 regulated 5 V carrier</text>
+<text x="680" y="360" font-size="23">TB6612FNG</text>
+<text x="65" y="175">D10 RX</text><text x="65" y="220">D11 TX</text>
+<text x="925" y="175">TXD</text><text x="925" y="220">RXD</text>
+<g stroke="#185968" stroke-width="2" fill="none">
+<path d="M260 170H915"/><path d="M260 215H355m75 0H915"/>
+<rect x="355" y="205" width="75" height="20"/>
+<path d="M515 215v30m0 60v350"/><rect x="505" y="245" width="20" height="60"/>
+</g>
+<circle cx="515" cy="215" r="4"/><text x="365" y="198">1 kΩ</text><text x="535" y="280">2 kΩ</text><text x="545" y="240">~3.33 V</text>
+<text x="65" y="385">D4</text><text x="65" y="420">D5 PWM</text><text x="65" y="455">D7 / D8</text><text x="65" y="490">D6 PWM</text><text x="65" y="525">D9 / D12</text>
+<text x="680" y="385">STBY</text><text x="680" y="420">PWMA</text><text x="680" y="455">AIN1 / AIN2</text><text x="680" y="490">PWMB</text><text x="680" y="525">BIN1 / BIN2</text>
+<g stroke="#185968" stroke-width="2" fill="none"><path d="M260 380H670M260 415H670M260 450H670M260 485H670M260 520H670"/><path d="M610 380v170m0 50v55"/><rect x="600" y="550" width="20" height="50"/></g>
+<circle cx="610" cy="380" r="4"/><text x="630" y="580">10 kΩ</text>
+<text x="910" y="400">AO1 / AO2</text><text x="910" y="425">→ Left motor</text><text x="910" y="485">BO1 / BO2</text><text x="910" y="510">→ Right motor</text>
+<path d="M40 655H1040" fill="none" stroke="#252525" stroke-width="4"/>
+<text x="40" y="690">GND: Uno + HC-05 + driver + motor pack negative (all common)</text>
+<text x="40" y="60">USB 5 V → Uno USB; Uno 5V → carrier VCC and driver VCC</text>
+<rect x="32" y="607" width="910" height="26" fill="white"/><text x="40" y="625">Motor pack + → fuse → switch → driver VM; bypass VM locally. Crossings without dots: no junction.</text>
+<text x="40" y="720">100 nF across each motor. See HARDWARE.md for full pin table, ratings and power checks.</text>
+</g></svg>
