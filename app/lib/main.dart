@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'bluetooth_radio.dart';
 import 'controller.dart';
+import 'demo_robot.dart';
 import 'protocol.dart';
 
 void main() => runApp(RobotApp(controller: RobotController(BluetoothRadio())));
@@ -145,7 +146,7 @@ class _RobotPageState extends State<RobotPage> with WidgetsBindingObserver {
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           children: [
-                            const Icon(Icons.smart_toy_outlined, size: 48),
+                            DemoRobot(movement: c.desired),
                             const SizedBox(height: 8),
                             const Text(
                               'DEMO • No Bluetooth connection',

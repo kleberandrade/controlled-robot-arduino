@@ -6,6 +6,57 @@ import 'package:robot_controller/protocol.dart';
 import 'controller_test.dart' show FakeRadio;
 
 void main() {
+  testWidgets(
+    'touch controls drive animation, release freezes and background removes it',
+    (tester) async {
+      tester.view.physicalSize = const Size(430, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      final radio = FakeRadio();
+      final c = RobotController(radio);
+      double y() => tester
+          .widget<Transform>(find.byKey(const Key('demo-position')))
+          .transform
+          .storage[13];
+      await tester.pumpWidget(RobotApp(controller: c));
+      await tester.tap(find.text('Start demo'));
+      await tester.pumpAndSettle();
+      final forward = await tester.startGesture(
+        tester.getCenter(find.text('Forward')),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(y(), lessThan(0));
+      await forward.up();
+      await tester.pump();
+      final stopped = y();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(y(), stopped);
+      final right = await tester.startGesture(
+        tester.getCenter(find.text('Right')),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+        tester
+            .widget<Transform>(find.byKey(const Key('demo-heading')))
+            .transform
+            .storage[1],
+        greaterThan(0),
+      );
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
+      expect(find.byKey(const Key('demo-position')), findsNothing);
+      expect(c.desired, Movement.stop);
+      expect(radio.connectionCalls, 0);
+      await right.cancel();
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump();
+    },
+  );
   testWidgets('demo controls, STOP, cancel and exit work without Bluetooth', (
     tester,
   ) async {
