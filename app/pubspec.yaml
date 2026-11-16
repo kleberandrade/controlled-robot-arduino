@@ -1,7 +1,7 @@
 name: robot_controller
 description: Android Bluetooth Classic SPP controller for the Uno robot.
 publish_to: none
-version: 1.0.0+4
+version: 1.0.0+5
 environment:
   sdk: ^3.11.5
 dependencies:

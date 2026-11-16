@@ -31,6 +31,7 @@ class _RobotPageState extends State<RobotPage> with WidgetsBindingObserver {
   String? _selected, _error;
   bool _loading = false;
   int? _pointer;
+  int _demoReset = 0;
   RobotController get c => widget.controller;
   @override
   void initState() {
@@ -109,6 +110,15 @@ class _RobotPageState extends State<RobotPage> with WidgetsBindingObserver {
     }
   }
 
+  void _resetDemo() {
+    if (!c.isDemo || !c.canMove) return;
+    setState(() {
+      _pointer = null;
+      _demoReset++;
+    });
+    c.stop();
+  }
+
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: c,
@@ -146,7 +156,15 @@ class _RobotPageState extends State<RobotPage> with WidgetsBindingObserver {
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           children: [
-                            DemoRobot(movement: c.desired),
+                            DemoRobot(
+                              key: ValueKey(_demoReset),
+                              movement: c.desired,
+                            ),
+                            TextButton.icon(
+                              onPressed: c.canMove ? _resetDemo : null,
+                              icon: const Icon(Icons.restart_alt),
+                              label: const Text('Reset position'),
+                            ),
                             const SizedBox(height: 8),
                             const Text(
                               'DEMO • No Bluetooth connection',

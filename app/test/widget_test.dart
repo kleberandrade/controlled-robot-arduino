@@ -7,6 +7,68 @@ import 'controller_test.dart' show FakeRadio;
 
 void main() {
   testWidgets(
+    'reset stops a held command, recenters heading and remains demo-only',
+    (tester) async {
+      tester.view.physicalSize = const Size(430, 1100);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final radio = FakeRadio();
+      final c = RobotController(radio);
+      double coordinate(int index) => tester
+          .widget<Transform>(find.byKey(const Key('demo-position')))
+          .transform
+          .storage[index];
+      double rotation(int index) => tester
+          .widget<Transform>(find.byKey(const Key('demo-heading')))
+          .transform
+          .storage[index];
+      await tester.pumpWidget(RobotApp(controller: c));
+      expect(find.text('Reset position'), findsNothing);
+      await tester.tap(find.text('Start demo'));
+      await tester.pumpAndSettle();
+      expect(find.text('Reset position'), findsOneWidget);
+      final turn = await tester.startGesture(
+        tester.getCenter(find.text('Right')),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      await turn.up();
+      await tester.pump();
+      expect(rotation(1), greaterThan(0));
+      final forward = await tester.startGesture(
+        tester.getCenter(find.text('Forward')),
+        pointer: 7,
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(coordinate(13), lessThan(0));
+      await tester.tap(find.text('Reset position'));
+      await tester.pump();
+      expect(c.desired, Movement.stop);
+      expect(c.reported, 'OK S');
+      expect(coordinate(12), 0);
+      expect(coordinate(13), 0);
+      expect(rotation(0), 1);
+      expect(rotation(1), 0);
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(coordinate(13), 0);
+      await forward.up();
+      await tester.pump();
+      await tester.tap(find.text('Reset position'));
+      await tester.pump();
+      expect(coordinate(13), 0);
+      expect(rotation(1), 0);
+      expect(c.canMove, isTrue);
+      expect(radio.connectionCalls, 0);
+      await tester.tap(find.text('Exit demo'));
+      await tester.pumpAndSettle();
+      expect(find.text('Reset position'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump();
+    },
+  );
+  testWidgets(
     'touch controls drive animation, release freezes and background removes it',
     (tester) async {
       tester.view.physicalSize = const Size(430, 1000);
