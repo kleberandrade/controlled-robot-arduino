@@ -19,11 +19,13 @@ No phone, radio, motor or physical robot has been tested here.
 
 ## Try the controls without a robot
 
-Install the latest **build-3 release APK** from the
+Install the latest **build-4 release APK** from the
 [same GitHub test release](https://github.com/kleberandrade/controlled-robot-arduino/releases/tag/v1.0.0-test.1),
 open the app and tap **Start demo**. No pairing or Bluetooth permission is needed
 for the demo. Hold Forward, Backward, Left or Right to see simulated command
-feedback; release, cancel the touch or tap STOP to return to stop. Tap **Exit demo**
+feedback and an animated top-view robot. Forward/Backward follow the robot's
+heading; Left/Right pivot in place. Release, cancel the touch or tap STOP to
+freeze the robot at its current position. Tap **Exit demo**
 to return to the real Bluetooth connection flow. Backgrounding also exits demo.
 Disconnect an active or pending real connection before starting demo.
 
@@ -32,7 +34,12 @@ Bluetooth. It demonstrates the interface, not robot physics, sensors, radio
 reliability or the Arduino watchdog. Real robot operation still requires the
 documented hardware and firmware.
 
-<img src="docs/screenshots/demo-mode.png" alt="Demo mode showing simulated Forward feedback and movement controls" width="340" />
+The preview stays inside its arena; reverse or turn to move away from an edge.
+Exiting/restarting demo recenters it. Animation pauses when the system requests
+reduced motion; command feedback remains available. Its illustrative distances,
+turning rate and boundaries do not represent real motor speed or collision sensing.
+
+<img src="docs/screenshots/demo-mode.png" alt="Demo mode showing an animated top-view robot moving forward and movement controls" width="340" />
 
 *Automated capture of the production Flutter widgets while Forward is held in
 demo mode; this is not a physical-phone screenshot.*
@@ -134,6 +141,8 @@ controller example. Host tests provide executable examples without hardware.
 - `firmware/robot/Robot.h`: pure parser, movement mapping and elapsed-time rules.
 - `firmware/robot/robot.ino`: Uno pins, driver output and SoftwareSerial adapter.
 - `app/lib/`: bounded reply parser, testable controller, SPP adapter and touch UI.
+- `app/lib/demo_motion.dart` and `demo_robot.dart`: pure illustrative pose rules
+  and a frame-driven, code-drawn robot used only in demo mode.
 - `tests/`: firmware behavior tests; `app/test/`: Dart and widget behavior tests.
 - `app/tool/capture_demo.dart`: repeatable Flutter capture for the README screen.
 - `docs/`: circuit, assembly, protocol and [work log](docs/WORK_LOG.md).
@@ -166,7 +175,8 @@ ROBOT_FONT_DIR=/path/to/flutter/bin/cache/artifacts/material_fonts \
 
 This loads the SDK's Roboto/Material fonts, renders the actual app widgets at a
 430×900 logical viewport and writes `docs/screenshots/demo-mode.png` at 2× scale.
-The capture also checks that releasing Forward returns to stop.
+The capture advances animation frames and checks that the robot has moved, then
+verifies that releasing Forward returns to stop.
 
 ## Troubleshooting and limitations
 

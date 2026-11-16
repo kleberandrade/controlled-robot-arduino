@@ -48,6 +48,13 @@ stopped and discards feedback before a real connection can start. This is a UI
 and protocol-feedback demonstration, not a simulation of firmware timing or
 motor physics.
 
+Demo's animated preview consumes the requested movement enum locally. Forward
+and backward translate along its current heading; left and right rotate in place.
+Stop freezes the pose, arena bounds clamp the illustration, and exit destroys
+the animation state. Rendering never emits protocol frames or Bluetooth calls.
+Frame gaps are capped and reduced-motion/TickerMode pauses stop the animation
+clock. These visual rules are independent of the real firmware watchdog.
+
 ```sh
 ./scripts/test-firmware.sh
 cd app

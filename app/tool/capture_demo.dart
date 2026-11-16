@@ -57,10 +57,20 @@ void main() {
     final held = await tester.startGesture(
       tester.getCenter(find.text('Forward')),
     );
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump();
+    for (var frame = 0; frame < 12; frame++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     expect(c.isDemo, isTrue);
     expect(c.desired, Movement.forward);
     expect(c.reported, 'OK F');
+    expect(
+      tester
+          .widget<Transform>(find.byKey(const Key('demo-position')))
+          .transform
+          .storage[13],
+      lessThan(0),
+    );
     final boundary = tester.renderObject<RenderRepaintBoundary>(
       find.byKey(screen),
     );
