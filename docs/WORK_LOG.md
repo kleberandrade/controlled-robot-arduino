@@ -11,3 +11,8 @@
 - Flutter 3.41.9 / Dart 3.11.5: eight protocol/controller/widget tests passed, with coverage output generated; debug APK compiled. Tests use simulated Bluetooth, not a phone or radio. Added CI for the same host/AVR/Flutter/Android checks. SDK packages required for local APK compilation were installed by Gradle.
 - Preserved original MIT copyright; documented dependency licenses. Added technology/license badges and real master-branch workflow badge. Verified the GitHub default branch is master; updated the authorized GitHub About description to match the implementation. A later explicit authorization superseded the original no-push restriction: publish only after all relevant checks pass, without force push.
 - Final app gate passed: formatting unchanged, flutter analyze --fatal-infos with no issues, all eight tests passed, updated debug APK built. Checked the merged Android manifest against the API-specific permission documentation. CI action releases were verified through the official GitHub release API and pinned to current compatible releases.
+
+## Release APK and repository naming
+
+- Applied the user's repository naming preference: renamed GitHub repository and local directory to `controlled-robot-arduino`, updated origin and tracked documentation/badge links. Preserved the existing GitHub release and tag.
+- Inspected Android signing: the scaffold still signed release builds with the debug key. Replacing that fallback with explicit private release signing so the requested APK is both non-debuggable and signed with a dedicated test-release key. Existing debug installations will need removal once because the signing identity changes.

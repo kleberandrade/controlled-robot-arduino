@@ -1,6 +1,6 @@
 # Controlled Robot
 
-[![CI](https://github.com/kleberandrade/controlled_robot_arduino/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/kleberandrade/controlled_robot_arduino/actions/workflows/ci.yml)
+[![CI](https://github.com/kleberandrade/controlled-robot-arduino/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/kleberandrade/controlled-robot-arduino/actions/workflows/ci.yml)
 [![Flutter 3.41.9](https://img.shields.io/badge/Flutter-3.41.9-02569B?logo=flutter)](https://docs.flutter.dev/)
 [![Dart 3.11.5](https://img.shields.io/badge/Dart-3.11.5-0175C2?logo=dart)](app/pubspec.yaml)
 [![Arduino Uno Rev3](https://img.shields.io/badge/Arduino-Uno_Rev3-00878F?logo=arduino)](https://docs.arduino.cc/hardware/uno-rev3/)
@@ -44,8 +44,8 @@ install a C++11 compiler with AddressSanitizer and UndefinedBehaviorSanitizer
 (Clang or GCC on macOS/Linux).
 
 ```sh
-git clone https://github.com/kleberandrade/controlled_robot_arduino.git
-cd controlled_robot_arduino
+git clone https://github.com/kleberandrade/controlled-robot-arduino.git
+cd controlled-robot-arduino
 arduino-cli core update-index
 arduino-cli core install arduino:avr@1.8.8
 arduino-cli compile --fqbn arduino:avr:uno firmware/robot
