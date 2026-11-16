@@ -40,6 +40,14 @@ safety-rated control system.
 
 Examples (no hardware required):
 
+The app's **Start demo** action uses the same client controller and reply parser
+with an in-memory transport. It acknowledges movement/stop frames without
+opening Bluetooth, requesting permissions or sending UART bytes. Demo never
+replaces an active or pending real connection. Exit/background resets it to
+stopped and discards feedback before a real connection can start. This is a UI
+and protocol-feedback demonstration, not a simulation of firmware timing or
+motor physics.
+
 ```sh
 ./scripts/test-firmware.sh
 cd app

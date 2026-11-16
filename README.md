@@ -17,6 +17,26 @@ This repository includes firmware, an Android app, host behavior tests,
 controller/widget tests, CI, and a [vector circuit](docs/circuit.svg).
 No phone, radio, motor or physical robot has been tested here.
 
+## Try the controls without a robot
+
+Install the latest **build-3 release APK** from the
+[same GitHub test release](https://github.com/kleberandrade/controlled-robot-arduino/releases/tag/v1.0.0-test.1),
+open the app and tap **Start demo**. No pairing or Bluetooth permission is needed
+for the demo. Hold Forward, Backward, Left or Right to see simulated command
+feedback; release, cancel the touch or tap STOP to return to stop. Tap **Exit demo**
+to return to the real Bluetooth connection flow. Backgrounding also exits demo.
+Disconnect an active or pending real connection before starting demo.
+
+Demo uses in-memory protocol replies and never sends motor commands over
+Bluetooth. It demonstrates the interface, not robot physics, sensors, radio
+reliability or the Arduino watchdog. Real robot operation still requires the
+documented hardware and firmware.
+
+<img src="docs/screenshots/demo-mode.png" alt="Demo mode showing simulated Forward feedback and movement controls" width="340" />
+
+*Automated capture of the production Flutter widgets while Forward is held in
+demo mode; this is not a physical-phone screenshot.*
+
 ## Supported configuration
 
 - Arduino Uno Rev3 (ATmega328P, 5 V), Arduino AVR core **1.8.8**,
@@ -115,6 +135,7 @@ controller example. Host tests provide executable examples without hardware.
 - `firmware/robot/robot.ino`: Uno pins, driver output and SoftwareSerial adapter.
 - `app/lib/`: bounded reply parser, testable controller, SPP adapter and touch UI.
 - `tests/`: firmware behavior tests; `app/test/`: Dart and widget behavior tests.
+- `app/tool/capture_demo.dart`: repeatable Flutter capture for the README screen.
 - `docs/`: circuit, assembly, protocol and [work log](docs/WORK_LOG.md).
 
 ## Tests and CI
@@ -123,7 +144,7 @@ controller example. Host tests provide executable examples without hardware.
 ./scripts/test-firmware.sh
 arduino-cli compile --fqbn arduino:avr:uno --warnings all firmware/robot
 cd app
-dart format --output=none --set-exit-if-changed lib test
+dart format --output=none --set-exit-if-changed lib test tool
 flutter analyze --fatal-infos
 flutter test --coverage
 flutter build apk --debug
@@ -135,6 +156,17 @@ The release check uses a disposable CI signing identity and verifies that the
 APK is signed and non-debuggable. CI keys are never used for published APKs.
 CI does not operate hardware. The badge reports the real workflow, not a static
 success claim. See the work log for actual results and tool limitations.
+
+To regenerate the screenshot, run from `app/`, replacing the SDK path:
+
+```sh
+ROBOT_FONT_DIR=/path/to/flutter/bin/cache/artifacts/material_fonts \
+  flutter test tool/capture_demo.dart
+```
+
+This loads the SDK's Roboto/Material fonts, renders the actual app widgets at a
+430×900 logical viewport and writes `docs/screenshots/demo-mode.png` at 2× scale.
+The capture also checks that releasing Forward returns to stop.
 
 ## Troubleshooting and limitations
 
