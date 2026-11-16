@@ -40,3 +40,21 @@ jobs:
       - run: flutter test --coverage
         timeout-minutes: 5
       - run: flutter build apk --debug
+      - name: Create disposable CI signing identity
+        run: |
+          TEST_KEY_PASSWORD="$(openssl rand -hex 32)"
+          echo "::add-mask::$TEST_KEY_PASSWORD"
+          export TEST_KEY_PASSWORD
+          keytool -genkeypair -noprompt -storetype PKCS12 \
+            -keystore android/ci-test-signing.p12 -alias ci-test \
+            -storepass:env TEST_KEY_PASSWORD -keypass:env TEST_KEY_PASSWORD \
+            -keyalg RSA -keysize 3072 -validity 30 \
+            -dname "CN=Disposable CI test key"
+          printf 'storeFile=ci-test-signing.p12\nstorePassword=%s\nkeyAlias=ci-test\nkeyPassword=%s\n' \
+            "$TEST_KEY_PASSWORD" "$TEST_KEY_PASSWORD" > android/key.properties
+      - run: flutter build apk --release
+      - name: Verify release APK is signed and non-debuggable
+        run: |
+          APK=build/app/outputs/flutter-apk/app-release.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify "$APK"
+          test "$("$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer" manifest debuggable "$APK")" = false

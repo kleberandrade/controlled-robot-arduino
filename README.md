@@ -56,11 +56,17 @@ flutter test
 flutter build apk --debug
 ```
 
-The debug APK is `app/build/app/outputs/flutter-apk/app-debug.apk` relative to the
-repository root. Install it on your own Android device using `adb install -r`
-with that file, or run `flutter run -d DEVICE_ID` from `app/`. Enable USB debugging
-on the phone. Debug signing is for local evaluation; configure your own private
-release signing before distribution. No store publishing is configured.
+For phone testing, download the smaller **release APK** from the
+[GitHub test release](https://github.com/kleberandrade/controlled-robot-arduino/releases/tag/v1.0.0-test.1).
+It is optimized, non-debuggable and signed with a dedicated local test-release
+key. Android 7+ is required. If the older debug APK is installed, uninstall it
+once before switching signing identities; uninstalling removes its local data.
+Installation and pairing instructions are included in the release.
+
+The command above builds a development APK at
+`app/build/app/outputs/flutter-apk/app-debug.apk`, relative to the repository
+root. For a signed release build, follow the [release signing guide](docs/ANDROID_RELEASE.md),
+then run `flutter build apk --release` from `app/`. No store publishing is configured.
 
 ## Quick start
 
@@ -124,9 +130,11 @@ flutter build apk --debug
 ```
 
 CI runs host tests with sanitizers, builds Uno firmware, checks Dart formatting
-and analysis, runs Flutter tests, and builds a debug Android APK. It does not
-operate hardware. The CI badge reports the real workflow, not a static success
-claim. See the work log for actual local results and tool limitations.
+and analysis, runs Flutter tests, and builds debug and release Android APKs.
+The release check uses a disposable CI signing identity and verifies that the
+APK is signed and non-debuggable. CI keys are never used for published APKs.
+CI does not operate hardware. The badge reports the real workflow, not a static
+success claim. See the work log for actual results and tool limitations.
 
 ## Troubleshooting and limitations
 
