@@ -1,0 +1,16 @@
+name: robot_controller
+description: Android Bluetooth Classic SPP controller for the Uno robot.
+publish_to: none
+version: 1.0.0+1
+environment:
+  sdk: ^3.11.5
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_bluetooth_serial_plus: 0.5.7
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true
