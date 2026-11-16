@@ -2,7 +2,7 @@
 
 The GitHub test release includes an optimized, non-debuggable APK for Android
 API 24+. It retains the same robot protocol as the original debug build. Version
-1.0.0 build 4 adds an animated robot to demo mode and updates builds 2–3 with the
+1.0.0 build 5 adds a demo-only Reset position action and updates builds 2–4 with the
 same release signature.
 The original debug APK remains build 1.
 This is still a hardware-unvalidated test release, not a store deployment.
@@ -79,7 +79,7 @@ The HC-05 pairing belongs to Android system Bluetooth settings, not app storage.
 
 The existing `v1.0.0-test.1` tag still identifies the original source commit; it
 is not rewritten. The release notes identify the separate source commit for
-each added release APK. Build 4 can update the build-2/3 release APK directly;
+each added release APK. Build 5 can update the build-2/3/4 release APK directly;
 switching from build 1's debug signature still requires the uninstall described
 above. Older assets remain available for reference.
 

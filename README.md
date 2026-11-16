@@ -19,7 +19,7 @@ No phone, radio, motor or physical robot has been tested here.
 
 ## Try the controls without a robot
 
-Install the latest **build-4 release APK** from the
+Install the latest **build-5 release APK** from the
 [same GitHub test release](https://github.com/kleberandrade/controlled-robot-arduino/releases/tag/v1.0.0-test.1),
 open the app and tap **Start demo**. No pairing or Bluetooth permission is needed
 for the demo. Hold Forward, Backward, Left or Right to see simulated command
@@ -35,7 +35,9 @@ reliability or the Arduino watchdog. Real robot operation still requires the
 documented hardware and firmware.
 
 The preview stays inside its arena; reverse or turn to move away from an edge.
-Exiting/restarting demo recenters it. Animation pauses when the system requests
+**Reset position** stops the current command, centers the robot and points its
+front upward. It also cancels the held touch; press a direction again to resume.
+Exiting/restarting demo also recenters it. Animation pauses when the system requests
 reduced motion; command feedback remains available. Its illustrative distances,
 turning rate and boundaries do not represent real motor speed or collision sensing.
 
@@ -174,7 +176,7 @@ ROBOT_FONT_DIR=/path/to/flutter/bin/cache/artifacts/material_fonts \
 ```
 
 This loads the SDK's Roboto/Material fonts, renders the actual app widgets at a
-430×900 logical viewport and writes `docs/screenshots/demo-mode.png` at 2× scale.
+430×1000 logical viewport and writes `docs/screenshots/demo-mode.png` at 2× scale.
 The capture advances animation frames and checks that the robot has moved, then
 verifies that releasing Forward returns to stop.
 

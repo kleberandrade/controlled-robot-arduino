@@ -51,7 +51,10 @@ motor physics.
 Demo's animated preview consumes the requested movement enum locally. Forward
 and backward translate along its current heading; left and right rotate in place.
 Stop freezes the pose, arena bounds clamp the illustration, and exit destroys
-the animation state. Rendering never emits protocol frames or Bluetooth calls.
+the animation state. **Reset position** stops the demo command and recreates
+the local preview at its default pose, cancelling any held pointer. It is not
+a hardware homing command; the real protocol is unchanged. Rendering never
+emits protocol frames or Bluetooth calls.
 Frame gaps are capped and reduced-motion/TickerMode pauses stop the animation
 clock. These visual rules are independent of the real firmware watchdog.
 

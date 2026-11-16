@@ -40,7 +40,7 @@ void main() {
         await loader.load();
       }
     });
-    tester.view.physicalSize = const Size(430, 900);
+    tester.view.physicalSize = const Size(430, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -62,6 +62,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
     expect(c.isDemo, isTrue);
+    expect(find.text('Reset position'), findsOneWidget);
     expect(c.desired, Movement.forward);
     expect(c.reported, 'OK F');
     expect(
